@@ -3,7 +3,22 @@ VXArchive main entry point and command-line handler.
 """
 import sys
 import os
-from .core.archive_engine import ArchiveEngine
+
+# Ensure project and package roots are always in sys.path
+_cur_dir = os.path.dirname(os.path.abspath(__file__))
+_parent_dir = os.path.dirname(_cur_dir)
+if _parent_dir not in sys.path:
+    sys.path.insert(0, _parent_dir)
+if _cur_dir not in sys.path:
+    sys.path.insert(0, _cur_dir)
+
+try:
+    from vxarchive.core.archive_engine import ArchiveEngine
+except ImportError:
+    try:
+        from core.archive_engine import ArchiveEngine
+    except ImportError:
+        from .core.archive_engine import ArchiveEngine
 
 
 def handle_quick_compress(source_path: str, format_ext: str = "zip") -> int:
@@ -47,7 +62,13 @@ def main():
             sys.exit(handle_extract(sys.argv[2], into_subfolder=False))
 
     from PyQt6.QtWidgets import QApplication
-    from .gui.main_window import VXArchiveMainWindow
+    try:
+        from vxarchive.gui.main_window import VXArchiveMainWindow
+    except ImportError:
+        try:
+            from gui.main_window import VXArchiveMainWindow
+        except ImportError:
+            from .gui.main_window import VXArchiveMainWindow
 
     app = QApplication.instance()
     if not app:

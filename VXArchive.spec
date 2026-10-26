@@ -1,16 +1,57 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
+import os
 
 datas = [('vxarchive.ico', '.'), ('vxarchive/bin', 'bin')]
 binaries = []
-hiddenimports = []
+hiddenimports = [
+    'vxarchive',
+    'vxarchive.core',
+    'vxarchive.core.archive_engine',
+    'vxarchive.core.archive_grep',
+    'vxarchive.core.archive_repair',
+    'vxarchive.core.batch_processor',
+    'vxarchive.core.benchmark',
+    'vxarchive.core.bookmarks',
+    'vxarchive.core.dedup_analyzer',
+    'vxarchive.core.diff_sync',
+    'vxarchive.core.hasher',
+    'vxarchive.core.health_checker',
+    'vxarchive.core.iso_mounter',
+    'vxarchive.core.lan_share',
+    'vxarchive.core.license_manager',
+    'vxarchive.core.metadata_inspector',
+    'vxarchive.core.password_memory',
+    'vxarchive.core.password_vault',
+    'vxarchive.core.sanitizer',
+    'vxarchive.core.sfx_builder',
+    'vxarchive.core.shell_integration',
+    'vxarchive.core.shredder',
+    'vxarchive.core.splitter',
+    'vxarchive.core.steganography',
+    'vxarchive.core.threat_scanner',
+    'vxarchive.core.transcoder',
+    'vxarchive.core.utils',
+    'vxarchive.gui',
+    'vxarchive.gui.main_window',
+    'vxarchive.gui.tab_page',
+    'vxarchive.gui.glass_theme',
+    'vxarchive.gui.icons',
+    'vxarchive.gui.mica_effect',
+    'PyQt6.QtCore',
+    'PyQt6.QtGui',
+    'PyQt6.QtWidgets'
+]
+
 tmp_ret = collect_all('qrcode')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+datas += tmp_ret[0]
+binaries += tmp_ret[1]
+hiddenimports += tmp_ret[2]
 
 
 a = Analysis(
     ['vxarchive/main.py'],
-    pathex=[],
+    pathex=['.'],
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
