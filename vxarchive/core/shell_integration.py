@@ -81,7 +81,16 @@ class ShellIntegration:
         try:
             import win32com.client
             shell = win32com.client.Dispatch("WScript.Shell")
-            exe_target = sys.executable
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            dist_exe = os.path.join(base_dir, "dist", "VXArchive", "VXArchive.exe")
+            if os.path.isfile(dist_exe):
+                exe_target = dist_exe
+                exe_work = os.path.dirname(dist_exe)
+                exe_args = ""
+            else:
+                exe_target = sys.executable.replace("python.exe", "pythonw.exe")
+                exe_work = base_dir
+                exe_args = f'"{os.path.join(base_dir, "vxarchive", "main.py")}"'
 
             if desktop:
                 for d in ShellIntegration.get_desktop_paths():
@@ -89,7 +98,9 @@ class ShellIntegration:
                         lnk = os.path.join(d, "VXArchive.lnk")
                         sc = shell.CreateShortcut(lnk)
                         sc.TargetPath = exe_target
-                        sc.WorkingDirectory = os.path.dirname(exe_target)
+                        sc.WorkingDirectory = exe_work
+                        if exe_args:
+                            sc.Arguments = exe_args
                         sc.Description = "VXArchive - Modern Archive Manager"
                         sc.Save()
                         count += 1
@@ -102,7 +113,9 @@ class ShellIntegration:
                         lnk = os.path.join(s, "VXArchive.lnk")
                         sc = shell.CreateShortcut(lnk)
                         sc.TargetPath = exe_target
-                        sc.WorkingDirectory = os.path.dirname(exe_target)
+                        sc.WorkingDirectory = exe_work
+                        if exe_args:
+                            sc.Arguments = exe_args
                         sc.Description = "VXArchive - Modern Archive Manager"
                         sc.Save()
                         count += 1
