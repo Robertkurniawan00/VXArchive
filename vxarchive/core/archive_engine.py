@@ -31,12 +31,25 @@ class ArchiveEngine:
 
     def __init__(self):
         # Locate bundled 7z or system 7z
+        candidates = []
+        if getattr(sys, "frozen", False):
+            meipass = getattr(sys, "_MEIPASS", "")
+            if meipass:
+                candidates.append(os.path.join(meipass, "bin", "7z.exe"))
+                candidates.append(os.path.join(meipass, "vxarchive", "bin", "7z.exe"))
+            exe_dir = os.path.dirname(sys.executable)
+            candidates.append(os.path.join(exe_dir, "bin", "7z.exe"))
+            candidates.append(os.path.join(exe_dir, "_internal", "bin", "7z.exe"))
+
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        bundled_7z = os.path.join(base_dir, "bin", "7z.exe")
-        if os.path.isfile(bundled_7z):
-            self.seven_zip_bin = bundled_7z
-        else:
-            self.seven_zip_bin = "7z.exe"
+        candidates.append(os.path.join(base_dir, "bin", "7z.exe"))
+        candidates.append(os.path.join(os.path.dirname(base_dir), "bin", "7z.exe"))
+
+        self.seven_zip_bin = "7z.exe"
+        for cand in candidates:
+            if cand and os.path.isfile(cand):
+                self.seven_zip_bin = cand
+                break
 
     def list_archive_contents(self, archive_path: str, password: Optional[str] = None) -> List[ArchiveItem]:
         items = []

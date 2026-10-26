@@ -49,7 +49,54 @@ class ArchiveTabPage(QWidget):
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setShowGrid(False)
         self.table.itemDoubleClicked.connect(self._on_table_double_clicked)
+        self.table.installEventFilter(self)
         layout.addWidget(self.table)
+
+    def eventFilter(self, obj, event):
+        from PyQt6.QtCore import QEvent
+        if obj == self.table and event.type() == QEvent.Type.KeyPress:
+            if event.key() == Qt.Key.Key_Space:
+                self.show_quicklook_for_selection()
+                return True
+        return super().eventFilter(obj, event)
+
+    def show_quicklook_for_selection(self):
+        selected = self.table.selectedItems()
+        if not selected:
+            return
+        row = selected[0].row()
+        name_item = self.table.item(row, 0)
+        if not name_item:
+            return
+        name = name_item.text().rstrip("/")
+
+        data = b""
+        if self.current_archive_path:
+            from .dialog_quicklook import QuickLookDialog
+            try:
+                import zipfile
+                if zipfile.is_zipfile(self.current_archive_path):
+                    with zipfile.ZipFile(self.current_archive_path, "r") as zf:
+                        if name in zf.namelist():
+                            data = zf.read(name)
+            except Exception:
+                pass
+            dlg = QuickLookDialog(self, title=name, data=data)
+            dlg.exec()
+        else:
+            fp = os.path.join(self.current_folder_path, name)
+            if os.path.isfile(fp):
+                from .dialog_quicklook import QuickLookDialog
+                try:
+                    if os.path.getsize(fp) < 10 * 1024 * 1024:
+                        with open(fp, "rb") as f:
+                            data = f.read()
+                    else:
+                        data = b"[File is too large for instant preview]"
+                except Exception as e:
+                    data = str(e).encode()
+                dlg = QuickLookDialog(self, title=name, data=data)
+                dlg.exec()
 
     def _on_address_entered(self):
         p = self.addr_input.text().strip()
