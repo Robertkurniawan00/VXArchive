@@ -1,0 +1,20 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\VXArchive.DarkGlass.Archive]
+@="VXArchive Compressed File"
+
+[HKEY_CLASSES_ROOT\VXArchive.DarkGlass.Archive\shell\open\command]
+@="\"VXArchive.exe\" \"%1\""
+
+[HKEY_CLASSES_ROOT\*\shell\VXArchive]
+"MUIVerb"="VXArchive"
+"SubCommands"=""
+
+[HKEY_CLASSES_ROOT\*\shell\VXArchive\shell\ExtractHere]
+"MUIVerb"="Extract here"
+
+[HKEY_CLASSES_ROOT\*\shell\VXArchive\shell\ExtractSubfolder]
+"MUIVerb"="Extract to subfolder"
+
+[HKEY_CLASSES_ROOT\*\shell\VXArchive\shell\Add]
+"MUIVerb"="Add to archive with VXArchive..."
