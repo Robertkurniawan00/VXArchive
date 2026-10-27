@@ -174,7 +174,7 @@ class AboutVXArchiveDialog(QDialog):
                 break
         layout.addWidget(ico_label)
 
-        lbl = QLabel("<h2>VXArchive</h2><p style='color: #94a3b8;'>Modern Dark Glass Archive Manager</p><p>Version 2.0 (Windows 11 Edition)</p>")
+        lbl = QLabel("<h2>VXArchive</h2><p style='color: #94a3b8;'>Archive Manager</p><p>Version 2.0 (Windows 11 Edition)</p>")
         lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl)
 

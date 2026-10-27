@@ -19,7 +19,7 @@ from .icons import IconEngine
 class VXArchiveMainWindow(QMainWindow):
     def __init__(self, initial_path: str = None):
         super().__init__()
-        self.setWindowTitle("VXArchive - Modern Dark Glass Edition")
+        self.setWindowTitle("VXArchive")
         self.resize(1020, 660)
 
         # Apply application & window icon
