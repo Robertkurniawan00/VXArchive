@@ -23,6 +23,21 @@ class ShellIntegration:
 
     @staticmethod
     def _get_target_exe() -> Tuple[str, str]:
+        # Priority 1: Permanent user AppData installation
+        local_app_data = os.environ.get("LOCALAPPDATA") or os.path.expanduser(r"~\AppData\Local")
+        appdata_exe = os.path.join(local_app_data, "Programs", "VXArchive", "VXArchive.exe")
+        appdata_ico = os.path.join(local_app_data, "Programs", "VXArchive", "vxarchive.ico")
+        if os.path.isfile(appdata_exe):
+            ico_ref = appdata_ico if os.path.isfile(appdata_ico) else f"{appdata_exe},0"
+            return appdata_exe, ico_ref
+
+        # Priority 2: Frozen PyInstaller execution
+        if getattr(sys, "frozen", False):
+            exe = sys.executable
+            ico = os.path.join(os.path.dirname(exe), "vxarchive.ico")
+            return exe, (ico if os.path.isfile(ico) else f"{exe},0")
+
+        # Priority 3: Local build dist or development fallback
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         dist_exe = os.path.join(base_dir, "dist", "VXArchive", "VXArchive.exe")
         ico_file = os.path.join(base_dir, "vxarchive.ico")

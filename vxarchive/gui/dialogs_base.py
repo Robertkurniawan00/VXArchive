@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QFileDialog, QMessageBox, QWidget, QSpinBox
 )
 from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QPixmap, QIcon
 from ..core.archive_engine import ArchiveEngine
 from ..core.benchmark import VXArchiveBenchmark
 from ..core.hasher import HashEngine
@@ -150,10 +151,30 @@ class AboutVXArchiveDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("About VXArchive")
-        self.resize(380, 220)
+        self.resize(400, 260)
 
         layout = QVBoxLayout(self)
-        lbl = QLabel("<h2>VXArchive</h2><p>Modern Dark Glass Archive Manager</p><p>Version 2.0 (Windows 11 Edition)</p>")
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Show official app icon
+        ico_label = QLabel()
+        ico_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        for cand in [
+            os.path.join(base_dir, "vxarchive.ico"),
+            os.path.join(os.path.dirname(base_dir), "vxarchive.ico"),
+            os.path.join(getattr(sys, "_MEIPASS", ""), "vxarchive.ico") if getattr(sys, "frozen", False) else "",
+            os.path.join(os.path.dirname(sys.executable), "vxarchive.ico") if getattr(sys, "frozen", False) else "",
+            "vxarchive.ico"
+        ]:
+            if cand and os.path.isfile(cand):
+                pix = QPixmap(cand).scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                ico_label.setPixmap(pix)
+                self.setWindowIcon(QIcon(cand))
+                break
+        layout.addWidget(ico_label)
+
+        lbl = QLabel("<h2>VXArchive</h2><p style='color: #94a3b8;'>Modern Dark Glass Archive Manager</p><p>Version 2.0 (Windows 11 Edition)</p>")
         lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl)
 

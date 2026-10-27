@@ -46,3 +46,5 @@ rarreg.key
 *.log
 *.tmp
 *.bak
+
+github_upload/
