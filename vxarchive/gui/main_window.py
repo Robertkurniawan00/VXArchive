@@ -20,12 +20,29 @@ class VXArchiveMainWindow(QMainWindow):
     def __init__(self, initial_path: str = None):
         super().__init__()
         self.setWindowTitle("VXArchive - Modern Dark Glass Edition")
-        self.resize(1000, 650)
+        self.resize(1020, 660)
+
+        # Apply application & window icon
+        self._init_window_icon()
 
         apply_windows_11_mica(self, backdrop_type="mica_alt", dark_mode=True, rounded_corners=True)
         apply_dark_glass_theme(self)
 
         self._setup_ui(initial_path or os.getcwd())
+
+    def _init_window_icon(self):
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        candidates = [
+            os.path.join(base_dir, "vxarchive.ico"),
+            os.path.join(os.path.dirname(base_dir), "vxarchive.ico"),
+            os.path.join(getattr(sys, "_MEIPASS", ""), "vxarchive.ico") if getattr(sys, "frozen", False) else "",
+            os.path.join(os.path.dirname(sys.executable), "vxarchive.ico") if getattr(sys, "frozen", False) else "",
+            "vxarchive.ico"
+        ]
+        for c in candidates:
+            if c and os.path.isfile(c):
+                self.setWindowIcon(QIcon(c))
+                break
 
     def _setup_ui(self, initial_path: str):
         self._setup_menu_bar()
@@ -191,30 +208,75 @@ class VXArchiveMainWindow(QMainWindow):
         help_menu.addAction(act_license)
 
     def _setup_toolbar(self):
+        from PyQt6.QtCore import QSize
         tb = self.addToolBar("Standard")
         tb.setMovable(False)
+        tb.setIconSize(QSize(20, 20))
+        tb.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
-        self.act_back = QAction("Back", self)
+        # Back & Forward Navigation
+        self.act_back = QAction(IconEngine.get_icon("back", 20), "Back", self)
+        self.act_back.setToolTip("Back to previous folder (Alt+Left)")
         self.act_back.triggered.connect(self._action_back)
         tb.addAction(self.act_back)
 
-        self.act_forward = QAction("Forward", self)
+        self.act_forward = QAction(IconEngine.get_icon("forward", 20), "Forward", self)
+        self.act_forward.setToolTip("Forward to next folder (Alt+Right)")
         self.act_forward.triggered.connect(self._action_forward)
         tb.addAction(self.act_forward)
 
         tb.addSeparator()
 
-        act_add = QAction("Add", self)
+        # Core Archive Commands
+        act_add = QAction(IconEngine.get_icon("add", 20), "Add", self)
+        act_add.setToolTip("Add files to archive (Alt+A)")
         act_add.triggered.connect(self._action_add)
         tb.addAction(act_add)
 
-        act_extract = QAction("Extract", self)
+        act_extract = QAction(IconEngine.get_icon("extract", 20), "Extract", self)
+        act_extract.setToolTip("Extract files to folder (Alt+E)")
         act_extract.triggered.connect(self._action_extract)
         tb.addAction(act_extract)
 
-        act_test = QAction("Test", self)
+        act_test = QAction(IconEngine.get_icon("test", 20), "Test", self)
+        act_test.setToolTip("Test archive integrity (Alt+T)")
         act_test.triggered.connect(self._action_test)
         tb.addAction(act_test)
+
+        act_view = QAction(IconEngine.get_icon("view", 20), "View", self)
+        act_view.setToolTip("QuickLook instant file preview (Spacebar)")
+        act_view.triggered.connect(self._action_view)
+        tb.addAction(act_view)
+
+        act_delete = QAction(IconEngine.get_icon("delete", 20), "Delete", self)
+        act_delete.setToolTip("Delete selected items (Del)")
+        act_delete.triggered.connect(self._action_delete_selected)
+        tb.addAction(act_delete)
+
+        tb.addSeparator()
+
+        # Pro Tools Quick Bar
+        act_repair = QAction(IconEngine.get_icon("repair", 20), "Repair", self)
+        act_repair.setToolTip("Salvage and repair damaged archive (Alt+R)")
+        act_repair.triggered.connect(self._action_repair)
+        tb.addAction(act_repair)
+
+        act_vault = QAction(IconEngine.get_icon("vault", 20), "Vault", self)
+        act_vault.setToolTip("Encrypted Password Vault (Ctrl+P)")
+        act_vault.triggered.connect(self._action_vault)
+        tb.addAction(act_vault)
+
+        act_chart = QAction(IconEngine.get_icon("chart", 20), "Chart", self)
+        act_chart.setToolTip("Storage Donut Chart visualization")
+        act_chart.triggered.connect(self._action_chart)
+        tb.addAction(act_chart)
+
+        tb.addSeparator()
+
+        act_refresh = QAction(IconEngine.get_icon("refresh", 20), "Refresh", self)
+        act_refresh.setToolTip("Reload directory or archive (F5)")
+        act_refresh.triggered.connect(self._action_refresh)
+        tb.addAction(act_refresh)
 
     @property
     def current_tab(self) -> ArchiveTabPage:
@@ -255,6 +317,47 @@ class VXArchiveMainWindow(QMainWindow):
         from .dialog_extract import ExtractionPathAndOptionsDialog
         dlg = ExtractionPathAndOptionsDialog(self)
         dlg.exec()
+
+    def _action_view(self):
+        if self.current_tab:
+            self.current_tab.show_quicklook_for_selection()
+
+    def _action_delete_selected(self):
+        if not self.current_tab:
+            return
+        selected = self.current_tab.table.selectedItems()
+        if not selected:
+            QMessageBox.information(self, "Delete", "Please select an item to delete.")
+            return
+        row = selected[0].row()
+        name_item = self.current_tab.table.item(row, 0)
+        if not name_item:
+            return
+        name = name_item.text().rstrip("/")
+        ret = QMessageBox.question(
+            self, "Confirm Delete",
+            f"Are you sure you want to permanently delete '{name}'?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        if ret == QMessageBox.StandardButton.Yes:
+            if self.current_tab.current_archive_path:
+                self.current_tab.engine.delete_items_from_archive(self.current_tab.current_archive_path, [name])
+                self.current_tab.open_archive(self.current_tab.current_archive_path)
+            else:
+                target = os.path.join(self.current_tab.current_folder_path, name)
+                if os.path.isfile(target):
+                    os.remove(target)
+                elif os.path.isdir(target):
+                    import shutil
+                    shutil.rmtree(target, ignore_errors=True)
+                self.current_tab.load_directory(self.current_tab.current_folder_path)
+
+    def _action_refresh(self):
+        if self.current_tab:
+            if self.current_tab.current_archive_path:
+                self.current_tab.open_archive(self.current_tab.current_archive_path)
+            else:
+                self.current_tab.load_directory(self.current_tab.current_folder_path)
 
     def _action_test(self):
         from .dialog_health import ArchiveHealthDialog

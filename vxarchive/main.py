@@ -74,6 +74,19 @@ def main():
     if not app:
         app = QApplication(sys.argv)
 
+    from PyQt6.QtGui import QIcon
+    icon_candidates = [
+        os.path.join(_parent_dir, "vxarchive.ico"),
+        os.path.join(_cur_dir, "vxarchive.ico"),
+        os.path.join(getattr(sys, "_MEIPASS", ""), "vxarchive.ico") if getattr(sys, "frozen", False) else "",
+        os.path.join(os.path.dirname(sys.executable), "vxarchive.ico") if getattr(sys, "frozen", False) else "",
+        "vxarchive.ico"
+    ]
+    for ic in icon_candidates:
+        if ic and os.path.isfile(ic):
+            app.setWindowIcon(QIcon(ic))
+            break
+
     window = VXArchiveMainWindow()
     if len(sys.argv) > 1 and not sys.argv[1].startswith("-"):
         window.open_path(sys.argv[1])
