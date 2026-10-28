@@ -247,22 +247,24 @@ class ArchiveEngine:
         if zipfile.is_zipfile(archive_path):
             try:
                 with zipfile.ZipFile(archive_path, "r") as z:
-                    z.setpassword(password.encode("utf-8"))
-                    # Try reading first file
+                    pwd_bytes = password.encode("utf-8") if isinstance(password, str) else password
+                    z.setpassword(pwd_bytes)
                     infolist = z.infolist()
                     if not infolist:
                         return True
                     z.read(infolist[0].filename)
                     return True
             except Exception:
-                return False
+                pass
 
         try:
-            cmd = [self.seven_zip_bin, "t", archive_path, f"-p{password}", "-y"]
-            res = subprocess.run(cmd, capture_output=True, text=True)
-            return res.returncode == 0
+            if self.seven_zip_bin:
+                cmd = [self.seven_zip_bin, "t", archive_path, f"-p{password}", "-y"]
+                res = subprocess.run(cmd, capture_output=True, text=True)
+                return res.returncode == 0
         except Exception:
-            return False
+            pass
+        return False
 
     def find_working_password(self, archive_path: str) -> Optional[Tuple[str, str]]:
         from .password_memory import ArchivePasswordMemory

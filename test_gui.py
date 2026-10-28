@@ -35,7 +35,7 @@ from vxarchive.gui.dialog_duplicates import DuplicateAnalyzerDialog
 from vxarchive.gui.dialog_batch import BatchManagerDialog
 from vxarchive.gui.dialog_quicklook import QuickLookDialog
 from vxarchive.gui.dialog_chart import StorageChartDialog
-from vxarchive.gui.dialog_vault import PasswordVaultDialog
+from vxarchive.gui.dialog_vault import PasswordVaultDialog, PasswordEntryDialog
 from vxarchive.gui.dialog_integration import SystemIntegrationDialog
 
 # 10 Pro Dialogs
@@ -90,6 +90,19 @@ class TestVXArchiveGUI(unittest.TestCase):
     def test_dialog_vault(self):
         dlg = PasswordVaultDialog(None, is_select_mode=False)
         self.assertIsNotNone(dlg)
+        self.assertTrue(hasattr(dlg, 'btn_add'))
+        self.assertTrue(hasattr(dlg, 'btn_edit'))
+        self.assertTrue(hasattr(dlg, 'btn_delete'))
+        self.assertTrue(hasattr(dlg, 'btn_copy'))
+        self.assertEqual(dlg.btn_add.text(), 'Add')
+        self.assertEqual(dlg.btn_edit.text(), 'Edit')
+        self.assertEqual(dlg.btn_delete.text(), 'Delete')
+
+        entry_dlg = PasswordEntryDialog(None, mode='add', label='TestEntry', password='SecretPassword')
+        lbl, pwd = entry_dlg.get_data()
+        self.assertEqual(lbl, 'TestEntry')
+        self.assertEqual(pwd, 'SecretPassword')
+        entry_dlg.close()
         dlg.close()
 
     def test_dialog_integration(self):

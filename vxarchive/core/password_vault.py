@@ -45,6 +45,19 @@ class PasswordVault:
         self.items.append({"label": label, "password": password})
         self.save()
 
+    def update_password(self, old_label: str, new_label: str, new_password: str):
+        found = False
+        for item in self.items:
+            if item.get("label") == old_label:
+                item["label"] = new_label
+                item["password"] = new_password
+                found = True
+                break
+        if not found:
+            self.add_password(new_label, new_password)
+        else:
+            self.save()
+
     def remove_password(self, label: str):
         self.items = [item for item in self.items if item.get("label") != label]
         self.save()

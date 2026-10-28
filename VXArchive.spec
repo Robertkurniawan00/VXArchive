@@ -38,6 +38,9 @@ hiddenimports = [
     'vxarchive.gui.glass_theme',
     'vxarchive.gui.icons',
     'vxarchive.gui.mica_effect',
+    'vxarchive.gui.dialog_vault',
+    'vxarchive.gui.dialogs_base',
+    'vxarchive.gui.dialogs_pro',
     'PyQt6.QtCore',
     'PyQt6.QtGui',
     'PyQt6.QtWidgets'
